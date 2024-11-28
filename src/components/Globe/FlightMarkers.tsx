@@ -1,34 +1,27 @@
 import { useEffect, useCallback } from 'react';
 import { useFlightStore } from '../../store/flightStore';
-import { fetchFlights } from '../../services/flightApi';
 import { FlightMarker } from './FlightMarker';
 import { convertToCartesian } from '../../utils/coordinates';
+import { generateFlights } from '../../utils/fakeFlights';
 
-export function FlightMarkers() {
-  const { flights, setFlights, setLoading, setError } = useFlightStore();
+interface FlightMarkersProps {
+  timeSpeed?: number;
+  selectedFlight?: Flight | null;
+}
 
-  const updateFlights = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await fetchFlights();
-      if (response.data.length === 0) {
-        setError('No flight data available');
-      }
-      setFlights(response.data);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to fetch flights');
-    } finally {
-      setLoading(false);
-    }
-  }, [setFlights, setLoading, setError]);
+export function FlightMarkers({ timeSpeed = 1, selectedFlight = null }: FlightMarkersProps) {
+  const { setFlights, flights } = useFlightStore();
+
+  const updateFlights = useCallback(() => {
+    const fakeFlights = generateFlights();
+    setFlights(fakeFlights);
+  }, [setFlights]);
 
   useEffect(() => {
     updateFlights();
-    const interval = setInterval(updateFlights, 30000); // Update every 30 seconds
-
+    const interval = setInterval(updateFlights, 60000 / timeSpeed);
     return () => clearInterval(interval);
-  }, [updateFlights]);
+  }, [updateFlights, timeSpeed]);
 
   return (
     <group>
@@ -39,6 +32,8 @@ export function FlightMarkers() {
             key={flight.id}
             flight={flight}
             position={position}
+            timeSpeed={timeSpeed}
+            isSelected={selectedFlight?.id === flight.id}
           />
         );
       })}

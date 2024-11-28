@@ -1,12 +1,13 @@
 export interface Flight {
   id: string;
+  callsign: string;
   latitude: number;
   longitude: number;
   altitude: number;
-  callsign: string;
-  origin?: string;
-  destination?: string;
-  velocity?: number;
+  velocity: number;
+  origin: string;
+  destination: string;
+  direction: number;
 }
 
 export interface OpenSkyResponse {
